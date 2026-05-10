@@ -143,3 +143,48 @@ export const unfollowUserAccount = async (req, res) => {
     });
   }
 };
+
+export const getLimitUser = async (req, res) => {
+  try {
+    const curretUserId = req.user.id;
+
+    const followedUser = await prisma.follow.findMany({
+      where: {
+        followerId: curretUserId,
+      },
+      select: {
+        followerId: true,
+      },
+    });
+
+    const followedIds = followedUser.map((user) => user.followingId);
+
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          notIn: [...followedIds, curretUserId],
+        },
+      },
+      select: {
+        id: true,
+        image: true,
+        fullname: true,
+        username: true,
+      },
+      take: 5,
+      orderBy: {
+        createAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      message: "5 user yang belum di follow",
+      data: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "server down",
+    });
+  }
+};
