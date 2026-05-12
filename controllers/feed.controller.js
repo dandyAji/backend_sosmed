@@ -71,9 +71,39 @@ export const CreateFeed = async (req, res) => {
   }
 };
 
+// ambil feed berdasarkan user yang difollow dan kita
 export const ReadAllFeeds = async (req, res) => {
   try {
+    const curretUserId = req.user.id;
+
+    const followings = await prisma.follow.findMany({
+      where: {
+        followingId: curretUserId,
+      },
+      select: {
+        followerId: true,
+      },
+    });
+
+    const followingIds = followings.map((following) => following.followerId);
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 3;
+    const skip = (page - 1) * limit;
+    const totalFeed = await prisma.post.count({
+      where: {
+        userId: {
+          in: [...followingIds, curretUserId],
+        },
+      },
+    });
+
     const Posts = await prisma.post.findMany({
+      where: {
+        userId: {
+          in: [...followingIds, curretUserId],
+        },
+      },
       include: {
         user: {
           select: {
@@ -87,10 +117,18 @@ export const ReadAllFeeds = async (req, res) => {
       orderBy: {
         createAt: "desc",
       },
+      skip,
+      take: limit,
     });
+
+    const totalPage = Math.ceil(totalFeed / limit);
 
     res.status(200).json({
       message: "berhasil mendapatkan data feed",
+      page,
+      limit,
+      totalPage,
+      totalFeed,
       data: Posts,
     });
   } catch (error) {
@@ -116,6 +154,25 @@ export const detailFeed = async (req, res) => {
             image: true,
             fullname: true,
             username: true,
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            content: true,
+            createAt: true,
+            user: {
+              select: {
+                id: true,
+                image: true,
+                fullname: true,
+                username: true,
+                createAt: true,
+              },
+            },
+          },
+          orderBy: {
+            createAt: "desc",
           },
         },
       },

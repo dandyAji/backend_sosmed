@@ -52,18 +52,18 @@ model Post {
 model Comment { 
     id    Int    @id @default(autoincrement()) 
     userId Int
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     postId Int
-    post Post @relation(fields: [postId], references: [id])
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
     content String @db.Text
     createAt DateTime @default(now())
 } 
 
 model Bookmark { 
     userId Int
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     postId Int
-    post Post @relation(fields: [postId], references: [id])
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
     content String @db.Text
     createAt DateTime @default(now())
     @@id([userId, postId])
@@ -71,9 +71,9 @@ model Bookmark {
 
 model Likes { 
     userId Int
-    user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     postId Int
-    post Post @relation(fields: [postId], references: [id])
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
     content String @db.Text
     createAt DateTime @default(now())
     @@id([userId, postId])
