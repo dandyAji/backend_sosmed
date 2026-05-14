@@ -188,3 +188,41 @@ export const getLimitUser = async (req, res) => {
     });
   }
 };
+
+export const isFollowUser = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const { followUserId } = req.params;
+
+    const checkUser = await prisma.user.findUnique({
+      where: {
+        id: Number(followUserId),
+      },
+    });
+
+    if (!checkUser) {
+      return res.status(404).json({
+        message: "user tidak ditemukan",
+      });
+    }
+
+    const isFollow = await prisma.follow.findUnique({
+      where: {
+        followingId_followerId: {
+          followerId: Number(followUserId),
+          followingId: Number(currentUserId),
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "status follow user",
+      data: !!isFollow,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "server down",
+    });
+  }
+};

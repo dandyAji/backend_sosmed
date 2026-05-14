@@ -14,6 +14,24 @@ export const getUserByUsername = async (req, res) => {
         password: true,
         imageId: true,
       },
+      include: {
+        posts: {
+          omit: {
+            userId: true,
+            imageId: true,
+          },
+        },
+        bookmarks: {
+          include: {
+            post: {
+              omit: {
+                userId: true,
+                imageId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!user) {
